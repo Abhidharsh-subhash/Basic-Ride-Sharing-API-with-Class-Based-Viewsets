@@ -11,5 +11,7 @@ urlpatterns = [
     #create and list methods implemented in your viewset and only mentioned it, your viewset will only handle POST and GET requests
     path('', views.sample.as_view({'post': 'create', 'get': 'list'}), name='sample'),
     path('user/signup',views.UserSignupViewSet.as_view({'post':'create'}),name='usersignup'),
-    path('rider/signup',views.RiderSignupViewSet.as_view({'post':'create'}),name='ridersignup')
+    path('user/login',views.UserLoginViewSet.as_view({'post':'login'}),name='userlogin'),
+    path('rider/signup',views.DriverSignupViewSet.as_view({'post':'create'}),name='ridersignup'),
+    path('rider/login',views.DriverLoginViewSet.as_view({'post':'login'}),name='riderlogin'),
 ]

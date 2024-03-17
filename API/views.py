@@ -6,6 +6,9 @@ from rest_framework.decorators import api_view
 from rest_framework import viewsets
 from .models import Users
 from . import serializers
+from rest_framework.decorators import action
+from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class sample(viewsets.ViewSet):
     def create(self, request, *args, **kwargs):
@@ -22,10 +25,43 @@ class UserSignupViewSet(viewsets.ViewSet):
             return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-class RiderSignupViewSet(viewsets.ViewSet):
+class DriverSignupViewSet(viewsets.ViewSet):
     def create(self, request):
-        serializer = serializers.RiderSignupSerializer(data=request.data)
+        serializer = serializers.DriverSignupSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Rider registered successfully"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "Driver registered successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserLoginViewSet(viewsets.ViewSet):
+    serializer_class = serializers.UserLoginSerializer
+
+    @action(detail=False, methods=['post'])
+    def login(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        tokens = RefreshToken.for_user(user)
+        breakpoint()
+        response = {
+            'message': 'User logged in successfully',
+            'access': str(tokens.access_token),
+            'refresh': str(tokens)
+        }
+        return Response(data=response, status=status.HTTP_200_OK)
+    
+class DriverLoginViewSet(viewsets.ViewSet):
+    serializer_class = serializers.DriverLoginSerializer
+
+    @action(detail=False, methods=['post'])
+    def login(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        tokens = RefreshToken.for_user(user)
+        response = {
+            'message': 'Driver logged in successfully',
+            'access': str(tokens.access_token),
+            'refresh': str(tokens)
+        }
+        return Response(data=response, status=status.HTTP_200_OK)

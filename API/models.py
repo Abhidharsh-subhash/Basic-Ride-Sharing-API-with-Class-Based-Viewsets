@@ -5,8 +5,6 @@ from django.contrib.auth.models import AbstractUser
 # Create your models here.
 
 # custom manager for the Users table
-
-
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password, **extra_fields):
         email = self.normalize_email(email)
@@ -19,8 +17,6 @@ class CustomUserManager(BaseUserManager):
         return user
 
 # table for the user details to be stored
-
-
 class Users(AbstractUser):
     email = models.CharField(max_length=80, unique=True)
     username = models.CharField(max_length=45)
@@ -34,3 +30,12 @@ class Users(AbstractUser):
 
     def __str__(self):
         return self.email
+
+class Rides(models.Model):
+    rider = models.ForeignKey(Users,on_delete=models.CASCADE,related_name='rider_booked')
+    driver = models.ForeignKey(Users,on_delete=models.CASCADE,related_name='driver_booked')
+    pickup_location = models.CharField(max_length=30)
+    dropoff_location = models.CharField(max_length=30)
+    status = models.CharField(max_length=20,default='waiting')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
