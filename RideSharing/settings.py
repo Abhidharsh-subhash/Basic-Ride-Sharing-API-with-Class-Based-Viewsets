@@ -53,6 +53,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'RideSharing.urls'
 
+# it is used to specify the custom user model
+AUTH_USER_MODEL = 'API.Users'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
