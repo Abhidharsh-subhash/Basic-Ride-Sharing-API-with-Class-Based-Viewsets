@@ -10,4 +10,6 @@ from rest_framework.routers import DefaultRouter
 urlpatterns = [
     #create and list methods implemented in your viewset and only mentioned it, your viewset will only handle POST and GET requests
     path('', views.sample.as_view({'post': 'create', 'get': 'list'}), name='sample'),
+    path('user/signup',views.UserSignupViewSet.as_view({'post':'create'}),name='usersignup'),
+    path('rider/signup',views.RiderSignupViewSet.as_view({'post':'create'}),name='ridersignup')
 ]
