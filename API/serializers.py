@@ -49,7 +49,7 @@ class DriverSignupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Users
-        fields = ('username', 'email', 'phone_number', 'password', 'confirm_password')
+        fields = ('username', 'email', 'phone_number','vehicle_number', 'password', 'confirm_password')
 
     def validate(self, data):
         if data['password'] != data.pop('confirm_password'):
@@ -57,13 +57,18 @@ class DriverSignupSerializer(serializers.ModelSerializer):
 
         # Validate email format using regex
         if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', data['email']):
-            raise serializers.ValidationError("Invalid email format")
+            raise serializers.ValidationError("Invalid email")
 
         if not re.match(r'^[789]\d{9}$', data['phone_number']):
-            raise serializers.ValidationError("Invalid phone number format")
+            raise serializers.ValidationError("Invalid phone number")
 
         if not re.match(r'^[a-zA-Z]{3,15}$', data['username']):
-            raise serializers.ValidationError("Invalid username format")
+            raise serializers.ValidationError("Invalid username")
+        
+        # if not re.match(r'^KL\d{2}[A-Za-z]{2}\d{4}$',data['vehicle_number']):
+        #     raise serializers.ValidationError('Invalid Vehicle_number')
+        if len(data['vehicle_number']) != 10:
+            raise serializers.ValidationError('Invalid vehicle_number')
         
         if Users.objects.filter(email=data['email'],is_staff=True).exists():
             raise serializers.ValidationError('Driver with the Email already exist')
@@ -79,6 +84,7 @@ class DriverSignupSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             phone_number=validated_data['phone_number'],
             password=validated_data['password'],
+            vehicle_number=validated_data['vehicle_number'].upper(),
             is_staff=True
         )
         return user
@@ -126,3 +132,8 @@ class DriverLoginSerializer(serializers.ModelSerializer):
         else:
             raise serializers.ValidationError('Email and Password are required')
         return attrs
+    
+class DriverListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Users
+        fields = ['username', 'phone_number', 'vehicle_number']

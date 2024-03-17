@@ -14,4 +14,5 @@ urlpatterns = [
     path('user/login',views.UserLoginViewSet.as_view({'post':'login'}),name='userlogin'),
     path('rider/signup',views.DriverSignupViewSet.as_view({'post':'create'}),name='ridersignup'),
     path('rider/login',views.DriverLoginViewSet.as_view({'post':'login'}),name='riderlogin'),
+    path('user/driverlist',views.DriverList.as_view({'get':'list'}),name='driverlist')
 ]

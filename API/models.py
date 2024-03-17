@@ -21,6 +21,7 @@ class Users(AbstractUser):
     email = models.CharField(max_length=80, unique=True)
     username = models.CharField(max_length=45)
     phone_number = models.CharField(max_length=15)
+    vehicle_number = models.CharField(max_length=10)
     is_user = models.BooleanField(default=False)
     is_worker = models.BooleanField(default=False)
 

@@ -4,11 +4,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework import viewsets
-from .models import Users
 from . import serializers
 from rest_framework.decorators import action
 from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.tokens import RefreshToken
+from .import models
+from .import permissions
 
 class sample(viewsets.ViewSet):
     def create(self, request, *args, **kwargs):
@@ -42,7 +43,6 @@ class UserLoginViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         tokens = RefreshToken.for_user(user)
-        breakpoint()
         response = {
             'message': 'User logged in successfully',
             'access': str(tokens.access_token),
@@ -65,3 +65,10 @@ class DriverLoginViewSet(viewsets.ViewSet):
             'refresh': str(tokens)
         }
         return Response(data=response, status=status.HTTP_200_OK)
+
+class DriverList(viewsets.ViewSet):
+    permission_classes = [permissions.IsUser]
+    def list(self,request):
+        drivers = models.Users.objects.filter(is_staff=True).all()
+        serializer = serializers.DriverListSerializer(instance=drivers,many=True)
+        return Response(serializer.data)
