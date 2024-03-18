@@ -18,6 +18,7 @@
 
 <h2>Installing</h2>
 <P>The whole installations need to be done inside the virtual environment by activating it and use it througout the entire project .</P>
+
  To install required packages, just run:
  ```sh
  pip install requirements.txt
