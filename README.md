@@ -29,3 +29,7 @@
  ```sh
  python manage.py runserver
  ```
+ To run the tests for each API, just run:
+ ```sh
+ python manage.py test
+ ```
