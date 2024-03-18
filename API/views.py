@@ -85,7 +85,6 @@ class Booking(viewsets.ViewSet):
     def create(self,request):
         serializer=serializers.RideSerializer(data=request.data)
         if serializer.is_valid():
-            breakpoint()
             driver_id = serializer.validated_data.get('driver')
             rider_id = request.user.id
             if not models.Users.objects.filter(id=driver_id.id, is_staff=True).exists():
