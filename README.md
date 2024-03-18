@@ -1,6 +1,6 @@
 
 <p align="center" markdown=1>
-  <i>Basic-Ride-Sharing-API-with-Class-Based-Viewsets.</i>
+  <i><b>Basic-Ride-Sharing-API-with-Class-Based-Viewsets</b>.</i>
 </p>
 <hr>
 <hr>
