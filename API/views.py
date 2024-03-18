@@ -11,6 +11,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .import models
 from .import permissions
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Q
+from drf_yasg.utils import swagger_auto_schema
 
 class sample(viewsets.ViewSet):
     def create(self, request, *args, **kwargs):
@@ -20,6 +22,7 @@ class sample(viewsets.ViewSet):
         return Response({"message": "it is a GET method"}, status=status.HTTP_200_OK)
     
 class UserSignupViewSet(viewsets.ViewSet):
+    @swagger_auto_schema(operation_summary='User can register by giving the details (username,email,phone_number,password,confirm_password)')
     def create(self, request):
         serializer = serializers.UserSignupSerializer(data=request.data)
         if serializer.is_valid():
@@ -28,6 +31,7 @@ class UserSignupViewSet(viewsets.ViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class DriverSignupViewSet(viewsets.ViewSet):
+    @swagger_auto_schema(operation_summary='Driver can register by providing the details (username,email,phone_number,password,confirm_password,vehicle_number)')
     def create(self, request):
         serializer = serializers.DriverSignupSerializer(data=request.data)
         if serializer.is_valid():
@@ -37,7 +41,7 @@ class DriverSignupViewSet(viewsets.ViewSet):
 
 class UserLoginViewSet(viewsets.ViewSet):
     serializer_class = serializers.UserLoginSerializer
-
+    @swagger_auto_schema(operation_summary='User can login by providing the details (email,password)')
     @action(detail=False, methods=['post'])
     def login(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -53,7 +57,7 @@ class UserLoginViewSet(viewsets.ViewSet):
     
 class DriverLoginViewSet(viewsets.ViewSet):
     serializer_class = serializers.DriverLoginSerializer
-
+    @swagger_auto_schema(operation_summary='Driver can login by providing the details (email,password)')
     @action(detail=False, methods=['post'])
     def login(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -69,6 +73,7 @@ class DriverLoginViewSet(viewsets.ViewSet):
 
 class DriverList(viewsets.ViewSet):
     permission_classes = [permissions.IsUser]
+    @swagger_auto_schema(operation_summary='The users can view the list of Drivers registered here.')
     def list(self,request):
         drivers = models.Users.objects.filter(is_staff=True).all()
         serializer = serializers.DriverListSerializer(instance=drivers,many=True)
@@ -76,14 +81,19 @@ class DriverList(viewsets.ViewSet):
     
 class Booking(viewsets.ViewSet):
     permission_classes = [permissions.IsUser]
+    @swagger_auto_schema(operation_summary='User can book the Riders by providing the details (driver,pickup_location,dropoff_location)') 
     def create(self,request):
         serializer=serializers.RideSerializer(data=request.data)
         if serializer.is_valid():
+            breakpoint()
             driver_id = serializer.validated_data.get('driver')
+            rider_id = request.user.id
             if not models.Users.objects.filter(id=driver_id.id, is_staff=True).exists():
                 return Response({'error': 'The driver ID is not valid'}, status=status.HTTP_400_BAD_REQUEST)
             elif models.Rides.objects.filter(driver=driver_id,status='ongoing').exists():
                 return Response({'error':'The driver is on a ride, please book another driver'})
+            elif models.Rides.objects.filter(Q(rider=rider_id) & (Q(status='ongoing') | Q(status='waiting'))).exists():
+                return Response({'error':'You already have a booking, first complete it'})
             serializer.save(rider=request.user)  # Set the rider to the authenticated user
             driver = models.Users.objects.get(id=serializer.data['driver'])
             response = {
@@ -97,11 +107,13 @@ class Booking(viewsets.ViewSet):
     
 class NewRides(viewsets.ViewSet):
     permission_classes = [permissions.IsDriver]
+    @swagger_auto_schema(operation_summary='List of all the new rides which were having status waiting') 
     def list(self,request):
         current_user = request.user
         rides = models.Rides.objects.filter(driver=current_user,status='waiting').all()
         serializer = serializers.NewRideSerializer(rides, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    @swagger_auto_schema(operation_summary='Driver can either accept it or reject it by providing the details (status)')
     def status_update(self,request):
         # Retrieve the ride instance to update
         try:
@@ -126,8 +138,31 @@ class NewRides(viewsets.ViewSet):
 
 class RidesHistory(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
+    @swagger_auto_schema(operation_summary='History of the rides except the waiting one.') 
     def list(self,request):
         current_user = request.user
         rides = models.Rides.objects.exclude(driver=current_user, status='waiting').all()
         serializer = serializers.RideHistorySerializer(rides, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class CancelOrCompleteRides(viewsets.ViewSet):
+    permission_classes = [permissions.IsDriver]
+    @swagger_auto_schema(operation_summary='Driver can either cancel or complete the ride by provind the details (rideid,status)') 
+    def update(self,request):
+        current_user = request.user
+        ride_id = request.data.get('ride')
+        # Fetch the ride object
+        current_ride = models.Rides.objects.filter(id=ride_id, driver=current_user, status='ongoing').first()
+        if current_ride:
+            # Update the status based on request data
+            action = request.data.get('action')
+            if action == 'cancelled':
+                current_ride.status = 'cancelled'
+            elif action == 'completed':
+                current_ride.status = 'completed'
+            current_ride.save()
+            # Return success response
+            return Response({'message': f'Ride {action} successfully'}, status=status.HTTP_200_OK)
+        else:
+            # Ride not found or not in 'ongoing' status
+            return Response({'error': 'Ride not found or not in ongoing status'}, status=status.HTTP_404_NOT_FOUND)
