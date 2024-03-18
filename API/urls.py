@@ -14,5 +14,8 @@ urlpatterns = [
     path('user/login',views.UserLoginViewSet.as_view({'post':'login'}),name='userlogin'),
     path('rider/signup',views.DriverSignupViewSet.as_view({'post':'create'}),name='ridersignup'),
     path('rider/login',views.DriverLoginViewSet.as_view({'post':'login'}),name='riderlogin'),
-    path('user/driverlist',views.DriverList.as_view({'get':'list'}),name='driverlist')
+    path('user/driverlist',views.DriverList.as_view({'get':'list'}),name='driverlist'),
+    path('user/booking',views.Booking.as_view({'post':'create'}),name='booking'),
+    path('rider/newrides',views.NewRides.as_view({'get':'list','patch':'status_update'}),name='newrides'),
+    path('ridehistory',views.RidesHistory.as_view({'get':'list'}),name='ridehistory')
 ]

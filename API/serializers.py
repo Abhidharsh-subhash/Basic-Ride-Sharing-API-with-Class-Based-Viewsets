@@ -1,6 +1,6 @@
 import re
 from rest_framework import serializers
-from .models import Users
+from .models import Users,Rides
 from django.db.models import Q
 from django.core.validators import EmailValidator
 from django.contrib.auth import authenticate
@@ -75,10 +75,13 @@ class DriverSignupSerializer(serializers.ModelSerializer):
         
         if Users.objects.filter(phone_number=data['phone_number'],is_staff=True).exists():
             raise serializers.ValidationError('Driver with the phone number already exist')
+        
+        if Users.objects.filter(is_staff=True,vehicle_number=data['vehicle_number'].upper()).exists():
+            raise serializers.ValidationError('Vehicle number is already registered on this platform')
 
         return data
 
-    def create(self, validated_data):
+    def create(self, validated_data):   
         user = Users.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
@@ -136,4 +139,25 @@ class DriverLoginSerializer(serializers.ModelSerializer):
 class DriverListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
-        fields = ['username', 'phone_number', 'vehicle_number']
+        fields = ['id','username', 'phone_number', 'vehicle_number']
+
+class RideSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rides
+        fields = ['driver','pickup_location', 'dropoff_location']
+    def validate(self,attrs):
+        if not re.match(r'^[a-zA-Z]{4,25}$', attrs['pickup_location']):
+            raise serializers.ValidationError("Invalid Pickup_location")
+        if not re.match(r'^[a-zA-Z]{4,25}$', attrs['dropoff_location']):
+            raise serializers.ValidationError("Invalid Dropoff_location")
+        return attrs
+    
+class NewRideSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rides
+        fields = ['id','rider','pickup_location', 'dropoff_location']
+
+class RideHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rides
+        fields = ['driver','rider','pickup_location', 'dropoff_location','status']
