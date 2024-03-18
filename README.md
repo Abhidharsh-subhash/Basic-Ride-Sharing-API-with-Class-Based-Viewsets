@@ -3,9 +3,6 @@
   <i>Basic-Ride-Sharing-API-with-Class-Based-Viewsets.</i>
 </p>
 <hr>
-<p align="justify">
-<b>FastCRUD</b> is a Python package for <b>FastAPI</b>, offering robust async CRUD operations and flexible endpoint creation utilities, streamlined through advanced features like <b>auto-detected join</b> conditions, <b>dynamic sorting</b>, and offset and cursor <b>pagination</b>.
-</p>
 <hr>
 <h2>Requirements</h2>
 <p>Before installing Ride-Sharing-API, ensure you have the following prerequisites:</p>
